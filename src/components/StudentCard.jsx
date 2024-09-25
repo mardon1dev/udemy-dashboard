@@ -10,8 +10,6 @@ const StudentCard = ({ student, index }) => {
   const navigate = useNavigate();
   const handleShowDelete = () => {
     setOpenDelete(true)
-    // students.splice(index, 1)
-    // setStudents([...students])
   }
   const handleDelete = (id) => {
     setStudents(students.filter((student) => student.id !== id))
