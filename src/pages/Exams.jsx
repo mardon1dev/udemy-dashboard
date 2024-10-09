@@ -2,7 +2,7 @@ import React from 'react'
 import NoInfo from "../assets/no-info.png";
 
 
-const Billing = () => {
+const Exams = () => {
   return (
     <div className='w-full'>
         <div className='flex items-center justify-center'>
@@ -12,4 +12,4 @@ const Billing = () => {
   )
 }
 
-export default Billing
+export default Exams

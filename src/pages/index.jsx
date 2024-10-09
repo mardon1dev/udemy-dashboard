@@ -6,7 +6,12 @@ import Add from "./Add";
 import SingleUser from "./SingleUser";
 import Update from "./Update";
 import NotFound from "./NotFound";
-
+import Login from "./Login";
+import SIgnUp from "./SIgnUp";
+import Teachers from "./Teachers";
+import Exams from "./Exams";
+import TeacherAdd from "./TeacherAdd";
+import TeacherSinglePage from "./TeacherSinglePage";
 export {
     Add,
     Dashboard,
@@ -15,5 +20,11 @@ export {
     Setting,
     SingleUser,
     Update,
-    NotFound
+    NotFound,
+    Login,
+    SIgnUp,
+    Teachers,
+    Exams,
+    TeacherAdd,
+    TeacherSinglePage
 }

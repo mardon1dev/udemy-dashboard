@@ -28,7 +28,7 @@ const Add = () => {
     }, 500);
   }
   return (
-    <div className="w-full h-full">
+    <div className="w-full">
       <div className="mx-auto pt-6 w-[90%] bg-white">
         <div className="flex items-center justify-between mb-[20px]">
           <Button onClick={() => navigate(-1)} title={"Back"} />
