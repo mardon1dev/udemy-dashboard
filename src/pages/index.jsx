@@ -7,7 +7,7 @@ import SingleUser from "./SingleUser";
 import Update from "./Update";
 import NotFound from "./NotFound";
 import Login from "./Login";
-import SIgnUp from "./SIgnUp";
+import SIgnUp from "./Sign-Up";
 import Teachers from "./Teachers";
 import Exams from "./Exams";
 import TeacherAdd from "./TeacherAdd";
