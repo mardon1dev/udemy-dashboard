@@ -1,43 +1,31 @@
-import React, { useState } from "react";
+import React from "react";
 import Input from "../components/Input";
 import Button from "../components/Button";
 import { Link } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
+import { useForm } from "../hooks/useForm";
+import authService from "../services/AuthService";
 
 const Login = () => {
-  const [loading, setLoading] = useState(false);
-  const user = JSON.parse(localStorage.getItem("user"));
-
-  const handleLogin = (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const data = Object.fromEntries(formData.entries());
-    if (!data.login || !data.password) {
-      toast.error("All fields are required!");
-      setLoading(false);
-      return;
+  // Custom Hooks Pattern - Form management
+  const { values, handleChange, handleSubmit, isSubmitting, errors } = useForm(
+    {
+      login: "",
+      password: ""
+    },
+    async (formData) => {
+      // Service Layer Pattern - Authentication logic
+      try {
+        authService.login(formData.login, formData.password);
+        toast.success("Login successful");
+        setTimeout(() => {
+          window.location.reload();
+        }, 500);
+      } catch (error) {
+        throw error; // Let useForm handle the error display
+      }
     }
-
-    if (user.password != data.password) {
-      toast.error("Invalid password");
-      setLoading(false);
-      return;
-    }
-
-    if (user.login != data.login) {
-      toast.error("Invalid login");
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      toast.success("Login successful");
-      localStorage.setItem("token", JSON.stringify(data));
-      window.location.reload()
-    }, 500);
-  };
+  );
   return (
     <div className="pt-[100px]">
       <Toaster position="top-center" reverseOrder={false} />
@@ -47,27 +35,46 @@ const Login = () => {
       <form
         className="w-[512px] mx-auto mt-[53px] bg-[#fff] px-[132px] pt-[72px] pb-[40px]"
         autoComplete="off"
-        onSubmit={handleLogin}
+        onSubmit={handleSubmit}
       >
         <p className="text-center text-[#667085] text-base font-medium leading-6">
           It is our great pleasure to have you on board!{" "}
         </p>
+        {errors.general && (
+          <div className="mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+            {errors.general}
+          </div>
+        )}
         <div className="flex flex-col gap-[14px] mt-[24px]">
-          <Input
-            name={"login"}
-            type={"text"}
-            placeholder={"Enter your Login"}
-          />
-          <Input
-            name={"password"}
-            type={"password"}
-            placeholder={"Enter your Password"}
-          />
+          <div>
+            <Input
+              name={"login"}
+              type={"text"}
+              placeholder={"Enter your Login"}
+              value={values.login}
+              onChange={handleChange}
+            />
+            {errors.login && (
+              <p className="text-red-500 text-sm mt-1">{errors.login}</p>
+            )}
+          </div>
+          <div>
+            <Input
+              name={"password"}
+              type={"password"}
+              placeholder={"Enter your Password"}
+              value={values.password}
+              onChange={handleChange}
+            />
+            {errors.password && (
+              <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+            )}
+          </div>
         </div>
         <div className="mt-[14px]">
           <Button
             type={"submit"}
-            title={loading ? "Processing.." : "Login"}
+            title={isSubmitting ? "Processing.." : "Login"}
             addStyle={"w-full text-sm font-bold leading-4 hov"}
           />
           <Link className="block text-center mt-2" to={"/signup"}>

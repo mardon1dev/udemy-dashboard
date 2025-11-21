@@ -1,22 +1,32 @@
-import React, { useContext, useState } from "react";
+import React from "react";
 import NoInfo from "../assets/no-info.png";
 import { SearchIcon } from "../assets/icons";
 import Button from "../components/Button";
 import { useNavigate } from "react-router-dom";
-import { Context } from "../context/Context";
+import { useEntity } from "../hooks/useEntity";
+import { useSearch } from "../hooks/useSearch";
+import studentService from "../services/StudentService";
 import StudentCard from "../components/StudentCard";
 
 const Students = () => {
   const navigate = useNavigate();
-  const [search, setSearch] = useState("");
 
-  const { students } = useContext(Context);
+  // Custom Hooks Pattern - CRUD operations
+  const {
+    items: students,
+    loading,
+    loadItems,
+  } = useEntity(studentService, "Student");
 
-  const filteredStudents = students.filter((student) =>
-    `${student.firstName} ${student.lastName}`
-      .toLowerCase()
-      .includes(search.toLowerCase())
-  );
+  // Custom Hooks Pattern - Search functionality
+  const {
+    searchTerm,
+    setSearchTerm,
+    filteredItems: filteredStudents,
+  } = useSearch(students, (items, term) => {
+    if (!term || term.trim() === "") return items;
+    return studentService.searchStudents(term);
+  });
 
   return (
     <div className="w-full p-4 bg-gray-50">
@@ -24,7 +34,14 @@ const Students = () => {
         <h1 className="text-3xl font-bold text-gray-800">Students</h1>
         <Button
           onClick={() => {
-            navigate("add");
+            navigate("add", {
+              state: {
+                from: "/students",
+                entityName: "Student",
+                action: "Add",
+                entityType: studentService,
+              },
+            });
           }}
           title={"Add Student"}
         />
@@ -39,28 +56,51 @@ const Students = () => {
             className="w-full py-3 pl-12 pr-4 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none"
             type="text"
             placeholder="Search for a student"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
       </form>
+
+      {loading && (
+        <div className="flex items-center justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#509CDB]"></div>
+        </div>
+      )}
 
       {filteredStudents.length > 0 ? (
         <table className="w-full bg-white shadow-md rounded-lg border border-gray-200 overflow-hidden">
           <thead className="bg-gray-100 border-b">
             <tr>
-              <th className="p-3 text-left text-sm font-semibold text-gray-700">N</th>
-              <th className="p-3 text-left text-sm font-semibold text-gray-700">First Name</th>
-              <th className="p-3 text-left text-sm font-semibold text-gray-700">Last Name</th>
-              <th className="p-3 text-left text-sm font-semibold text-gray-700">Email</th>
-              <th className="p-3 text-left text-sm font-semibold text-gray-700">Phone</th>
-              <th className="p-3 text-left text-sm font-semibold text-gray-700">Student ID</th>
+              <th className="p-3 text-left text-sm font-semibold text-gray-700">
+                N
+              </th>
+              <th className="p-3 text-left text-sm font-semibold text-gray-700">
+                First Name
+              </th>
+              <th className="p-3 text-left text-sm font-semibold text-gray-700">
+                Last Name
+              </th>
+              <th className="p-3 text-left text-sm font-semibold text-gray-700">
+                Email
+              </th>
+              <th className="p-3 text-left text-sm font-semibold text-gray-700">
+                Phone
+              </th>
+              <th className="p-3 text-left text-sm font-semibold text-gray-700">
+                Student ID
+              </th>
               <th className="p-3 text-left text-sm font-semibold text-gray-700 w-[120px]"></th>
             </tr>
           </thead>
           <tbody>
             {filteredStudents.map((student, index) => (
-              <StudentCard student={student} index={index} key={index} />
+              <StudentCard
+                student={student}
+                index={index}
+                key={student.id}
+                onDelete={loadItems}
+              />
             ))}
           </tbody>
         </table>

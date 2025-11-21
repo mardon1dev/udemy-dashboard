@@ -42,3 +42,6 @@ body {
 .active {
   background-color: #509cdb;
 }
+::-webkit-scrollbar {
+  width: 0px;
+}

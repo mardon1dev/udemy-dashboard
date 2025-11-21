@@ -1,23 +1,32 @@
-import React, { useContext, useState } from "react";
+import React from "react";
 import NoInfo from "../assets/no-info.png";
-
 import { useNavigate } from "react-router-dom";
-import { Context } from "../context/Context";
 import Button from "../components/Button";
 import { SearchIcon } from "../assets/icons";
 import TeacherCard from "../components/TeacherCard";
+import { useEntity } from "../hooks/useEntity";
+import { useSearch } from "../hooks/useSearch";
+import teacherService from "../services/TeacherService";
 
 const Teachers = () => {
   const navigate = useNavigate();
-  const [search, setSearch] = useState("");
 
-  const { teachers } = useContext(Context);
+  // Custom Hooks Pattern - CRUD operations
+  const {
+    items: teachers,
+    loading,
+    loadItems,
+  } = useEntity(teacherService, "Teacher");
 
-  const filteredTeachers = teachers.filter((teacher) =>
-    `${teacher.firstName} ${teacher.lastName}`
-      .toLowerCase()
-      .includes(search.toLowerCase())
-  );
+  // Custom Hooks Pattern - Search functionality
+  const {
+    searchTerm,
+    setSearchTerm,
+    filteredItems: filteredTeachers,
+  } = useSearch(teachers, (items, term) => {
+    if (!term || term.trim() === "") return items;
+    return teacherService.searchTeachers(term);
+  });
 
   return (
     <div className="w-full p-4 bg-gray-50">
@@ -25,7 +34,14 @@ const Teachers = () => {
         <h1 className="text-3xl font-bold text-gray-800">Teachers</h1>
         <Button
           onClick={() => {
-            navigate("add");
+            navigate("add", {
+              state: {
+                from: "/teachers",
+                entityName: "Teacher",
+                action: "Add",
+                entityType: teacherService,
+              },
+            });
           }}
           title={"Add Teacher"}
         />
@@ -40,13 +56,19 @@ const Teachers = () => {
             className="w-full py-3 pl-12 pr-4 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none"
             type="text"
             placeholder="Search for a teacher"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
       </form>
 
-      {filteredTeachers.length > 0 ? (
+      {loading && (
+        <div className="flex items-center justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#509CDB]"></div>
+        </div>
+      )}
+
+      {!loading && filteredTeachers.length > 0 ? (
         <table className="w-full bg-white shadow-md rounded-lg border border-gray-200 overflow-hidden">
           <thead className="bg-gray-100 border-b">
             <tr>
@@ -54,7 +76,10 @@ const Teachers = () => {
                 N
               </th>
               <th className="p-3 text-left text-sm font-semibold text-gray-700">
-                Name
+                First name
+              </th>
+              <th className="p-3 text-left text-sm font-semibold text-gray-700">
+                Last name
               </th>
               <th className="p-3 text-left text-sm font-semibold text-gray-700">
                 Subject
@@ -73,7 +98,12 @@ const Teachers = () => {
           </thead>
           <tbody>
             {filteredTeachers.map((teacher, index) => (
-              <TeacherCard teacher={teacher} index={index} key={index} />
+              <TeacherCard
+                teacher={teacher}
+                index={index}
+                key={teacher.id}
+                onDelete={loadItems}
+              />
             ))}
           </tbody>
         </table>
@@ -82,7 +112,7 @@ const Teachers = () => {
           <img src={NoInfo} alt="No Info" className="w-40 h-30" />
           <div className="text-center mt-6">
             <p className="text-gray-700 text-2xl font-semibold">
-              No students at this time
+              No teachers at this time
             </p>
           </div>
         </div>
